@@ -1,0 +1,214 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bida Vui 🎱</title>
+<!-- Online cần thêm Rules Firebase:  "bida":{"rooms":{"$code":{".read":"auth != null",".write":"auth != null"}}} -->
+<style>
+body{margin:0;background:#1b2340;color:#fff;font:600 15px system-ui,'Be Vietnam Pro',sans-serif;text-align:center;user-select:none}
+button,select,input{font:inherit;font-weight:800;border:0;border-radius:12px;padding:10px 14px;margin:4px}
+button{background:#ffc233;color:#222;cursor:pointer}input,select{background:#fff;color:#222;width:auto}#rc{width:70px;text-transform:uppercase;text-align:center}
+h1{margin:20px 0 8px}#game{display:none;max-width:1300px;margin:auto;height:100vh;height:100dvh;flex-direction:column}#board{flex:1;min-height:0;display:flex;gap:6px;padding:0 6px;justify-content:center}#cw{flex:none;position:relative;display:flex;align-items:center;justify-content:center}#bar{flex:none}
+.side{width:76px;flex:none;align-self:center;display:flex;flex-direction:column;align-items:center;gap:5px;background:#16204a;border:3px solid transparent;border-radius:14px;padding:8px 0;font-size:13px}.side.on{border-color:#ffc233}.side small{color:#9fb0e0;font-weight:500}.side .mb{width:28px;height:28px;font-size:13px;line-height:26px;margin:0}@media(max-width:720px){.side{width:48px}.side .mb{width:22px;height:22px;font-size:10px;line-height:20px}}
+#hud{display:flex;gap:8px;align-items:stretch;padding:6px}.pl{flex:1;background:#2a3566;border-radius:12px;padding:6px;border:3px solid transparent}.pl.on{border-color:#ffc233}
+#mid{flex:1.4;display:flex;flex-direction:column;justify-content:center}.mb{display:inline-block;width:20px;height:20px;border-radius:50%;margin:1px;border:1px solid #fff;font:800 10px/18px system-ui,sans-serif;color:#fff;text-shadow:0 0 2px #000,0 0 2px #000;text-align:center;font-style:normal;vertical-align:middle}.d{display:inline-block;width:14px;height:14px;border-radius:50%;margin:1px;border:1px solid #fff}
+canvas{width:100%;display:block;margin:0 auto;touch-action:none;cursor:crosshair}#pwb{position:absolute;left:0;top:90px;width:16px;height:300px;background:#0006;border-radius:8px;overflow:hidden}
+#pwb i{position:absolute;bottom:0;width:100%;background:linear-gradient(0deg,#3c3,#fc3,#e33);height:0}
+#hint{padding:2px 6px;color:#bcd;white-space:pre-line}#help{position:fixed;inset:0;background:#000b;display:none;overflow:auto;z-index:9}#help div{max-width:560px;margin:20px auto;background:#2a3566;border-radius:16px;padding:16px;text-align:left}
+#menu{display:none;gap:22px;max-width:1000px;margin:22px auto;padding:0 16px;text-align:left;flex-wrap:wrap}.ml{flex:1 1 380px}.mr{flex:1 1 320px;text-align:center}
+#menu h1{font-size:38px;margin:0 0 14px}#menu label{display:block;margin:14px 0 6px;color:#9fb0e0;font-size:14px}
+.card{display:flex;gap:10px;align-items:center;background:#16204a;border:2px solid #2a3566;border-radius:14px;padding:12px;cursor:pointer;flex:1;margin:0}.card.on{border-color:#ffc233;background:#22305f}.card small{display:block;color:#9fb0e0;font-weight:500}
+.row{display:flex;gap:10px}.pn{background:#16204a;border:2px solid #2a3566;border-radius:16px;padding:6px 16px 16px;margin-top:12px}.chip{background:#22305f;color:#fff;border-radius:99px;padding:8px 18px;margin:0 6px 0 0}.chip.on{background:#e8f0ee;color:#123}
+.go{width:100%;margin:16px 0 0;padding:14px;font-size:18px;background:#e0ac4d}#nm{width:100%;box-sizing:border-box;margin:0;font-size:17px}.mr svg.t{width:100%;max-width:440px;filter:drop-shadow(0 8px 14px #0008)}
+#menu #rc{width:100%;text-align:left;text-transform:uppercase;letter-spacing:.2em}#menu .vkw>input{margin:0}
+#rl{position:fixed;inset:0;background:#000b;display:none;overflow:auto;z-index:9}#rl div{max-width:560px;margin:20px auto;background:#2a3566;border-radius:16px;padding:16px;text-align:left}#rl p{margin:10px 0;line-height:1.5}
+#ol{max-height:170px;overflow:auto;margin:6px 0}.ob{display:flex;align-items:center;gap:8px;background:#22305f;border-radius:12px;padding:6px 6px 6px 12px;margin:4px 0}.ob b{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ob i{width:9px;height:9px;border-radius:50%;background:#3ddc84;flex:none}.ob button{margin:0;padding:6px 14px}#os{width:100%;box-sizing:border-box;margin:0}#o2 .vkw>input{margin:0}#hi{margin:8px 0;font-size:17px}#hi .chip{margin:0 0 0 8px;padding:5px 12px;font-size:13px}#iv{position:fixed;left:50%;top:12px;transform:translateX(-50%);background:#16204a;border:2px solid #ffc233;border-radius:16px;padding:10px 14px;z-index:20;display:none;box-shadow:0 8px 24px #000a;max-width:92vw}#iv button{margin:6px 4px 0}.em{color:#9fb0e0;font-weight:500;padding:8px}
+</style></head><body>
+<div id="menu"><div class="ml"><h1>🎱 Đấu Trường Bida</h1>
+<div id="hi" style="display:none">👋 Xin chào, <b></b><button class="chip" onclick="changeName()">Đổi tên</button></div><div id="nmbox"><label>Tên của bạn <small style="color:#7d8cbc;font-weight:500">(chỉ cần nhập một lần)</small></label><span class="vkw"><input id="nm" placeholder="Nhập tên của bạn…" maxlength="14" autocomplete="off"><button type="button" class="vkb" data-vk="nm" title="Bàn phím ảo">⌨️</button></span></div><div id="iv"></div>
+<div class="row" style="margin-top:14px"><div class="card on" id="m1" onclick="setMode(1)">🤖<div><b>1 người</b><small>Đấu với máy</small></div></div><div class="card" id="m2" onclick="setMode(2)">🌐<div><b>2 người</b><small>Online, vào phòng bằng mã</small></div></div></div>
+<div class="pn" id="o1"><label>Cấp độ</label><button class="chip lv" onclick="setLv(0)">Dễ</button><button class="chip lv on" onclick="setLv(1)">Trung bình</button><button class="chip lv" onclick="setLv(2)">Khó</button>
+<button class="go" onclick="vsAI()">Bắt đầu ván</button></div>
+<div class="pn" id="o2" style="display:none"><label>🟢 Người chơi đang online <small id="oc" style="color:#7d8cbc"></small></label><span class="vkw"><input id="os" placeholder="Tìm theo tên…" autocomplete="off" maxlength="14"><button type="button" class="vkb" data-vk="os" title="Bàn phím ảo">⌨️</button></span><div id="ol"></div><label>Tạo phòng mới và gửi mã cho bạn</label><button class="chip" style="background:#ffc233;color:#222" onclick="host()">Tạo phòng</button>
+<label>Hoặc nhập mã phòng của bạn bè</label><div class="row"><span class="vkw"><input id="rc" maxlength="4" placeholder="MÃ" autocomplete="off"><button type="button" class="vkb" data-vk="rc" data-ok="join($('#rc').value.toUpperCase())" title="Bàn phím ảo">⌨️</button></span><button class="chip" style="background:#ffc233;color:#222;margin:0;white-space:nowrap" onclick="join($('#rc').value.toUpperCase())">Vào phòng</button></div></div>
+<p id="wt" style="color:#ffd86b"></p><button class="chip" onclick="help(1)">❓ Hướng dẫn dùng chuột</button></div>
+<div class="mr"><svg class="t" viewBox="0 0 400 230"><rect width="400" height="230" rx="22" fill="#5a1a10"/><rect x="20" y="20" width="360" height="190" fill="#2a8fc4"/><circle cx="24" cy="24" r="12"/><circle cx="376" cy="24" r="12"/><circle cx="24" cy="206" r="12"/><circle cx="376" cy="206" r="12"/><circle cx="200" cy="18" r="11"/><circle cx="200" cy="212" r="11"/>
+<circle cx="270" cy="115" r="9" fill="#f5c400"/><circle cx="288" cy="105" r="9" fill="#d92b2b"/><circle cx="288" cy="125" r="9" fill="#1e5bd6"/><circle cx="306" cy="115" r="9" fill="#111"/><circle cx="306" cy="97" r="9" fill="#1c9a3c"/><circle cx="306" cy="133" r="9" fill="#f07a1a"/><circle cx="90" cy="115" r="9" fill="#fff"/><path d="M99 115L258 115" stroke="#fff" stroke-width="2" stroke-dasharray="6 5"/></svg>
+<div style="margin-top:14px"><svg width="64" height="64" viewBox="0 0 24 24" style="vertical-align:middle"><path d="M5 17a7 7 0 0 1 14 0z" fill="#3ddc84"/><circle cx="9.3" cy="14" r=".9" fill="#fff"/><circle cx="14.7" cy="14" r=".9" fill="#fff"/><path d="M7.6 7l1.6 2.5M16.4 7l-1.6 2.5" stroke="#3ddc84" stroke-width="1.2" stroke-linecap="round"/></svg><div style="color:#9fb0e0">Đối thủ: Máy Android</div></div></div></div>
+<div id="game"><div id="hud"><div class="pl" id="p0"></div><div id="mid"><b id="msg"></b><button onclick="rules(1)">📜 Luật chơi</button><button onclick="quit()">⬅ Thoát game</button></div><div class="pl" id="p1"></div></div>
+<div id="board"><div class="side" id="s0"></div><div id="cw"><canvas id="c" width="1100" height="600"></canvas><div id="pwb"><i></i></div></div><div class="side" id="s1"></div></div><div id="hint"></div><div id="bar">
+<button style="padding:4px 14px;margin:2px" onclick="help(1)">❓</button><button style="padding:4px 14px;margin:2px" onclick="mute^=1;this.textContent=mute?'🔇':'🔊'">🔊</button></div></div>
+<div id="rl"><div><h2>📜 Luật chơi bida 8 bi</h2>
+<p>🎯 <b>Mục tiêu:</b> bỏ hết 7 bi của nhóm mình vào lỗ, rồi bỏ <b>bi 8</b> <i class="d" style="background:#111"></i> vào lỗ để thắng 🏆.</p>
+<p>🔵 <b>Hai nhóm bi:</b> bi liền 1–7 <i class="d" style="background:#f5c400"></i><i class="d" style="background:#1e5bd6"></i><i class="d" style="background:#d92b2b"></i> hoặc bi sọc 9–15. Ai bỏ được bi hợp lệ đầu tiên (sau cú phá) thì nhóm đó thuộc về người ấy, đối thủ nhận nhóm còn lại.</p>
+<p>✅ <b>Bỏ bi nhóm mình vào lỗ:</b> được đánh tiếp.<br>⏭️ <b>Không bỏ được bi nào</b> (hoặc chỉ bỏ bi của đối thủ): mất lượt.</p>
+<p>⚠️ <b>Lỗi</b> (đối thủ được ✋ <b>đặt bi trắng tự do</b> ở bất kỳ chỗ trống nào):<br>⚪ bi trắng rơi xuống lỗ<br>🎱 bi trắng chạm sai bi trước (chạm bi đối thủ, hoặc bi 8 khi chưa bỏ hết bi mình)<br>💨 đánh trượt, không chạm bi nào<br>🧱 không có bi nào chạm băng hoặc xuống lỗ sau khi đánh</p>
+<p>⚫ <b>Bi 8:</b> chỉ được bỏ khi đã hết bi nhóm mình. Bỏ bi 8 sớm, hoặc bỏ bi 8 mà phạm lỗi (ví dụ bi trắng cũng rơi lỗ) là <b>thua ❌</b>. Riêng cú phá: bi 8 xuống lỗ thì được đặt lại giữa bàn.</p>
+<p>👀 <b>Đọc bảng tên:</b> khung <span style="color:#ffc233">viền vàng</span> = đến lượt người đó. Các chấm màu là bi còn lại của nhóm, <b>chấm mờ = đã bỏ</b>. Hiện "➜ bi 8" nghĩa là chỉ còn bi 8.</p>
+<button onclick="rules(0)">Đã hiểu, chơi tiếp</button></div></div>
+<div id="help"><div><h2>🖱️ Cách chơi bằng chuột</h2>
+<p>1️⃣ <b>Di chuột</b> để ngắm: đường trắng là hướng bi trắng đi; vòng tròn là chỗ chạm bi, đường ngắn cho thấy bi sẽ đi đâu sau va chạm.<br>
+2️⃣ <b>Giữ chuột trái và kéo lùi</b> (ra xa hướng ngắm) để lấy lực – xem thanh lực bên phải.<br>3️⃣ <b>Thả chuột</b> để đánh. Nhấn <b>Esc</b>/chuột phải để huỷ.<br>
+4️⃣ <b>Lăn con lăn</b> hoặc phím <b>← →</b> để chỉnh góc ngắm thật nhỏ.<br>5️⃣ Khi được đặt bi trắng: <b>nhấp chuột</b> vào chỗ trống trên bàn.<br>(Trên điện thoại: chạm để ngắm, giữ và kéo lùi để lấy lực.)</p>
+<h3>📜 Luật (bida 8 bi)</h3><p>Bi vào lỗ đầu tiên (sau cú phá) quyết định nhóm: <b>bi liền 1-7</b> hoặc <b>bi sọc 9-15</b>. Bỏ bi của mình vào lỗ thì đánh tiếp. Lỗi (bi trắng rơi lỗ, chạm bi sai trước, không chạm bi nào, không bi nào chạm băng) → đối thủ được đặt bi trắng tự do. Bỏ hết bi nhóm mình rồi bỏ <b>bi 8</b> vào lỗ là thắng; bỏ bi 8 sớm hoặc lỗi lúc bỏ bi 8 là thua.</p>
+<button onclick="help(0)">Đã hiểu, chơi thôi!</button></div></div>
+<script src="vk.js"></script>
+<script>
+const $=s=>document.querySelector(s),cv=$('#c'),X=cv.getContext('2d'),W=1000,H=500,R=12,M=50,DT=1/300;
+const PK=[[-6,-6],[W/2,-14],[W+6,-6],[-6,H+6],[W/2,H+14],[W+6,H+6]],PR=[28,26,28,28,26,28];
+const CL=[0,'#f5c400','#1e5bd6','#d92b2b','#6a2fa8','#f07a1a','#1c9a3c','#7a1f1f','#111'];
+let G,S,run=0,mode,me=0,pid=Math.random().toString(36).slice(2),code,started=0,applied=0,names=['',''],ang=0,pull=null,pw=0,mx=300,my=250,diff=1,acc=0,last=0,ac,mute=0,tmr;
+/* ---------- âm thanh ---------- */
+let M0;const A=()=>{if(!ac){ac=new(window.AudioContext||webkitAudioContext)();const c=ac.createDynamicsCompressor(),g=ac.createGain();g.gain.value=.8;c.connect(g);g.connect(ac.destination);M0=c}ac.resume();return ac};
+function tone(v,f,d,ty){if(mute)return;const a=A(),t=a.currentTime,o=a.createOscillator(),g=a.createGain(),pk=Math.min(.3,v/2500+.03);o.type=ty||'sine';o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*.85,t+d);
+ g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(pk,t+.004);g.gain.exponentialRampToValueAtTime(.0005,t+d);o.connect(g);g.connect(M0);o.start(t);o.stop(t+d+.02)}
+function ping(f,d,g){if(mute)return;const a=A(),t=a.currentTime,o=a.createOscillator(),e=a.createGain();o.type='sine';o.frequency.setValueAtTime(f,t);e.gain.setValueAtTime(.0001,t);e.gain.linearRampToValueAtTime(g,t+.0015);e.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(e);e.connect(M0);o.start(t);o.stop(t+d+.02)}
+let NB;function tick(g,fr){if(mute)return;const a=A(),t=a.currentTime;if(!NB){NB=a.createBuffer(1,a.sampleRate*.04|0,a.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(d.length*.12))}
+ const s=a.createBufferSource(),f=a.createBiquadFilter(),e=a.createGain();s.buffer=NB;f.type='bandpass';f.frequency.value=fr;f.Q.value=1.2;e.gain.value=g;s.connect(f);f.connect(e);e.connect(M0);s.start(t)}
+let lc=0;
+function clap(){if(mute||Date.now()-lc<900)return;lc=Date.now();const a=A(),sr=a.sampleRate,n=sr*2.2|0,b=a.createBuffer(1,n,sr),d=b.getChannelData(0);
+ for(let k=0;k<150;k++){const t=Math.random()*1.7,s=t*sr|0,len=900+Math.random()*1100|0,am=(.25+.75*Math.random())*Math.min(1,t/.35)*(1-t/2),a1=.12+Math.random()*.16;let y=0,z=0;for(let i=0;i<len&&s+i<n;i++){const x=Math.random()*2-1;y+=a1*(x-y);z+=.03*(x-z);d[s+i]+=(y-z)*Math.exp(-i/(len*.3))*Math.min(1,i/70)*am*.32}}
+ const s=a.createBufferSource(),l=a.createBiquadFilter(),h=a.createBiquadFilter(),g=a.createGain(),T=a.currentTime;l.type='lowpass';l.frequency.value=2600;l.Q.value=.2;h.type='highpass';h.frequency.value=350;g.gain.setValueAtTime(0,T);g.gain.linearRampToValueAtTime(.5,T+.3);g.gain.linearRampToValueAtTime(.35,T+1.1);g.gain.linearRampToValueAtTime(0,T+2.1);s.buffer=b;s.connect(h);h.connect(l);l.connect(g);g.connect(M0);s.start()}
+let lt=0;function snd(t,v,i){const n=Date.now();if(t!='p'){if(n-lt<25)return;lt=n}
+ if(t=='b'){const k=Math.min(1,v/700),j=1+Math.random()*.05;ping(2350*j,.12,.03+.2*k);ping(3900*j,.07,.012+.07*k);ping(560,.04,.03+.1*k);tick(.04+.22*k,4200)}
+ else if(t=='w'){const k=Math.min(1,v/600);ping(210,.12,.03+.16*k);ping(480,.05,.01+.05*k);tick(.02+.08*k,1500)}
+ else if(i){ping(260,.22,.14);ping(170,.3,.1);clap()}else{ping(200,.25,.12);ping(130,.32,.08)}}
+/* ---------- vật lý (xác định, 2 máy chạy giống nhau) ---------- */
+const rng=s=>()=>(s=s*1664525+1013904223>>>0)/4294967296;
+function mk(seed){const r=rng(seed),a=[1,2,3,4,5,6,7,9,10,11,12,13,14,15];for(let i=13;i>0;i--){const j=r()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}a.splice(4,0,8);
+ for(let k=0;k<15&&(a[10]<8)==(a[14]<8);k++){const j=(k*3+1)%15;if(j!=4&&j!=10&&j!=14&&(a[j]<8)!=(a[14]<8))[a[j],a[14]]=[a[14],a[j]]}
+ const b=[{x:250,y:250,vx:0,vy:0,in:0}];let s=0;for(let c=0;c<5;c++)for(let k=0;k<=c;k++)b[a[s++]]={x:750+c*(R*1.733+.3),y:250+(k-c/2)*(2*R+.5),vx:0,vy:0,in:0};return b}
+function step(){const B=G.B;
+ for(let i=0;i<16;i++){const b=B[i];if(b.in)continue;const v=Math.sqrt(b.vx*b.vx+b.vy*b.vy);
+  if(v>0){const n=v-DT*(150+.5*v);if(n<6)b.vx=b.vy=0;else{const k=n/v;b.vx*=k;b.vy*=k}}
+  b.x+=b.vx*DT;b.y+=b.vy*DT;let h=0;
+  const ox=b.x>40&&b.x<W/2-34||b.x>W/2+34&&b.x<W-40,oy=b.y>40&&b.y<H-40;
+  if(ox){if(b.y<R&&b.vy<0){b.y=R;b.vy*=-.78;h=1}else if(b.y>H-R&&b.vy>0){b.y=H-R;b.vy*=-.78;h=1}}
+  if(oy){if(b.x<R&&b.vx<0){b.x=R;b.vx*=-.78;h=1}else if(b.x>W-R&&b.vx>0){b.x=W-R;b.vx*=-.78;h=1}}
+  if(h){if(S.first)S.rail=1;snd('w',v,0)}
+  for(let k=0;k<6;k++){const dx=b.x-PK[k][0],dy=b.y-PK[k][1];if(dx*dx+dy*dy<PR[k]*PR[k]||b.x<-30||b.x>W+30||b.y<-30||b.y>H+30){b.in=1;b.vx=b.vy=0;S.pot.push(i);snd('p',0,i);break}}}
+ for(let i=0;i<16;i++)for(let j=i+1;j<16;j++){const a=B[i],c=B[j];if(a.in||c.in)continue;const dx=c.x-a.x,dy=c.y-a.y,d2=dx*dx+dy*dy;if(d2>=4*R*R||d2==0)continue;
+  const d=Math.sqrt(d2),nx=dx/d,ny=dy/d,o=(2*R-d)/2;a.x-=nx*o;a.y-=ny*o;c.x+=nx*o;c.y+=ny*o;const rv=(c.vx-a.vx)*nx+(c.vy-a.vy)*ny;
+  if(rv<0){const q=-.97*rv;a.vx-=q*nx;a.vy-=q*ny;c.vx+=q*nx;c.vy+=q*ny;if(i==0&&!S.first)S.first=j;snd('b',-rv,0)}}}
+const moving=()=>G.B.some(b=>!b.in&&(b.vx||b.vy));
+const cnt=p=>{const g=G.grp[p];if(!g)return 15;let c=0;for(let i=1;i<16;i++)if(i!=8&&!G.B[i].in&&(g=='s'?i<8:i>8))c++;return c};
+const free=(x,y)=>x>=R&&x<=W-R&&y>=R&&y<=H-R&&G.B.every((b,i)=>i==0||b.in||(b.x-x)**2+(b.y-y)**2>=4*R*R);
+function shoot(x,y,vx,vy){G.B[0]={x,y,vx,vy,in:0};S={first:0,rail:0,pot:[],rem:cnt(G.turn),n:0};G.hand=0;run=1;{const k=Math.min(1,Math.sqrt(vx*vx+vy*vy)/1800);ping(1500,.07,.04+.16*k);ping(2600,.04,.01+.05*k);tick(.03+.12*k,3500)}hud()}
+/* ---------- luật ---------- */
+function judge(){const p=G.turn,B=G.B,g=G.grp[p],f=S.first,pot=S.pot.filter(i=>i),t8=g&&S.rem==0,own=i=>g=='s'?i<8:i>8;let foul=0,m='';
+ if(B[0].in){foul=1;m='bi trắng rơi lỗ'}else if(!f){foul=1;m='không chạm bi nào'}else if(g?(t8?f!=8:f==8||!own(f)):f==8){foul=1;m='chạm sai bi'}else if(!pot.length&&!S.rail){foul=1;m='không có bi nào chạm băng'}
+ if(pot.includes(8)){if(G.brk){let x=750;while(B.some((b,i)=>i!=8&&!b.in&&Math.sqrt((b.x-x)**2+(b.y-250)**2)<2*R))x+=4;B[8]={x,y:250,vx:0,vy:0,in:0}}else{G.over=1;G.win=foul||!t8?1-p:p;clap();return}}
+ const pt=pot.filter(i=>i!=8);let am='';const GN=s=>s=='s'?'bi liền 1-7':'bi sọc 9-15';
+ if(!g&&!foul&&!G.brk&&pt.length){const s=pt[0]<8?'s':'o';G.grp[p]=s;G.grp[1-p]=s=='s'?'o':'s';am='🎯 '+names[p]+' nhận '+GN(s)+', '+names[1-p]+' nhận '+GN(G.grp[1-p])+'. '}
+ const gg=G.grp[p],good=!foul&&pt.some(i=>!gg||(gg=='s'?i<8:i>8));G.brk=0;
+ G.msg=am+(foul?'⚠️ Lỗi: '+m+'. ':'')+(good?names[p]+' đánh tiếp.':'Đến lượt '+names[1-p]+(foul?' (đặt bi trắng).':'.'));
+ if(foul||!good){G.turn=1-p;G.hand=foul?1:0}}
+function fin(){judge();hud();if(!G.over&&mode=='ai'&&G.turn==1)setTimeout(aiMove,900)}
+/* ---------- máy ---------- */
+const spd=d=>{let lo=200,hi=2600;for(let k=0;k<20;k++){const m=(lo+hi)/2;2*m-600*Math.log(1+m/300)<d?lo=m:hi=m}return hi};
+function plan(q){const B=G.B,p=G.turn,g=G.grp[p],r8=g&&cnt(p)==0,ok=i=>!B[i].in&&(g?(r8?i==8:i!=8&&(g=='s'?i<8:i>8)):i!=8);let best=null,near=null,nd=1e9;
+ const clear=(ax,ay,bx,by,s)=>{for(let i=1;i<16;i++){if(B[i].in||i==s)continue;const dx=bx-ax,dy=by-ay,u=Math.max(0,Math.min(1,((B[i].x-ax)*dx+(B[i].y-ay)*dy)/(dx*dx+dy*dy))),ex=ax+u*dx-B[i].x,ey=ay+u*dy-B[i].y;if(ex*ex+ey*ey<4*R*R)return 0}return 1};
+ for(let i=1;i<16;i++){if(!ok(i))continue;const t=B[i],d0=(t.x-q.x)**2+(t.y-q.y)**2;if(d0<nd){nd=d0;near=t}
+  for(const[px,py]of PK){const dx=px-t.x,dy=py-t.y,d=Math.sqrt(dx*dx+dy*dy),gx=t.x-dx/d*2*R,gy=t.y-dy/d*2*R,vx=gx-q.x,vy=gy-q.y,L=Math.sqrt(vx*vx+vy*vy),cs=(vx*dx+vy*dy)/(L*d);
+   if(L<1||cs<.4||!clear(q.x,q.y,gx,gy,i)||!clear(t.x,t.y,px,py,i))continue;const s=cs*100-(L+d)*.04;if(!best||s>best.s)best={s,vx,vy,L,d}}}
+ if(!best){if(!near)return null;const vx=near.x-q.x,vy=near.y-q.y;return{s:-99,vx,vy,L:Math.sqrt(vx*vx+vy*vy),d:G.brk?3000:300}}return best}
+function aiMove(){if(G.over||run)return;let best=null;const cs=G.hand?Array.from({length:90},()=>({x:R+Math.random()*W*.5,y:R+Math.random()*(H-2*R)})).filter(q=>free(q.x,q.y)):[G.B[0]];
+ for(const q of cs){const r=plan(q);if(r&&(!best||r.s>best.s))best={...r,q}}if(!best)return;
+ const a=Math.atan2(best.vy,best.vx)+(Math.random()-.5)*[.06,.025,.008][diff],v=spd(best.L+best.d+200)*(1+(Math.random()-.5)*[.2,.1,.03][diff]);shoot(best.q.x,best.q.y,Math.cos(a)*v,Math.sin(a)*v)}
+/* ---------- vẽ ---------- */
+const ANDROID='<svg width="26" height="26" viewBox="0 0 24 24" style="vertical-align:middle"><path d="M5 17a7 7 0 0 1 14 0z" fill="#3ddc84"/><circle cx="9.3" cy="14" r=".9" fill="#fff"/><circle cx="14.7" cy="14" r=".9" fill="#fff"/><path d="M7.6 7l1.6 2.5M16.4 7l-1.6 2.5" stroke="#3ddc84" stroke-width="1.2" stroke-linecap="round"/></svg>';
+let mm=1,lv=1;
+function setMode(m){mm=m;if(m==2)startPres();$('#m1').classList.toggle('on',m==1);$('#m2').classList.toggle('on',m==2);$('#o1').style.display=m==1?'block':'none';$('#o2').style.display=m==2?'block':'none'}
+function setLv(v){lv=v;document.querySelectorAll('.lv').forEach((b,i)=>b.classList.toggle('on',i==v))}
+function need(){const n=$('#nm').value.trim();if(!n){$('#nm').focus();$('#wt').textContent='Hãy nhập tên của bạn trước nhé.';return 0}localStorage.bidaName=n;nameUI();return 1}
+let VIS=[];
+function vis0(){VIS=[];for(let i=0;i<16;i++){let l=[Math.random()*.5-.25,Math.random()*.5-.25,1],n=Math.sqrt(l[0]**2+l[1]**2+1);l=l.map(v=>v/n);let a=[l[1]*0-l[2]*1,l[2]*.3-l[0]*0,l[0]*1-l[1]*.3],m=Math.sqrt(a[0]**2+a[1]**2+a[2]**2);VIS.push({l,a:a.map(v=>v/m)})}}
+function spin(dt){G.B.forEach((b,i)=>{const v=Math.sqrt(b.vx*b.vx+b.vy*b.vy);if(b.in||v<1||!VIS[i])return;const kx=-b.vy/v,ky=b.vx/v,an=v*dt/R,co=Math.cos(an),si=Math.sin(an);
+ for(const w of[VIS[i].l,VIS[i].a]){const[x,y,z]=w,d=kx*x+ky*y;w[0]=x*co+ky*z*si+kx*d*(1-co);w[1]=y*co-kx*z*si+ky*d*(1-co);w[2]=z*co+(kx*y-ky*x)*si}})}
+function ball(i,b){const x=b.x+M,y=b.y+M,c=i?CL[i>8?i-8:i]:'#fff',o=VIS[i]||{l:[0,0,1],a:[0,1,0]};
+ let g=X.createRadialGradient(x+3,y+5,R*.3,x+3,y+5,R*1.5);g.addColorStop(0,'rgba(0,0,0,.45)');g.addColorStop(1,'rgba(0,0,0,0)');X.fillStyle=g;X.beginPath();X.arc(x+3,y+5,R*1.5,0,7);X.fill();
+ X.save();X.beginPath();X.arc(x,y,R,0,7);X.clip();X.fillStyle=i>8||!i?'#f4f4ee':c;X.fillRect(x-R,y-R,2*R,2*R);
+ if(i>8){X.fillStyle=c;const ax=o.a[0],ay=o.a[1];if(Math.sqrt(ax*ax+ay*ay)<.4){X.beginPath();X.arc(x,y,R*.62,0,7);X.fill()}else{X.translate(x,y);X.rotate(Math.atan2(ay,ax));X.fillRect(-R*.5,-R,R,2*R);X.setTransform(1,0,0,1,0,0)}}
+ if(i)for(const s of[1,-1]){const lx=o.l[0]*s,ly=o.l[1]*s,lz=o.l[2]*s;if(lz<.05)continue;X.save();X.translate(x+lx*R*.9,y+ly*R*.9);X.rotate(Math.atan2(ly,lx));X.scale(Math.max(lz,.2),1);X.fillStyle='#fafafa';X.beginPath();X.arc(0,0,R*.46,0,7);X.fill();X.fillStyle='#111';X.font='bold 9px sans-serif';X.textAlign='center';X.textBaseline='middle';X.fillText(i,0,.5);X.restore()}
+ g=X.createRadialGradient(x-.3*R,y-.35*R,R*.1,x+.1*R,y+.1*R,R*1.1);g.addColorStop(0,'rgba(255,255,255,.5)');g.addColorStop(.35,'rgba(255,255,255,0)');g.addColorStop(.75,'rgba(0,0,0,.2)');g.addColorStop(1,'rgba(0,0,0,.6)');X.fillStyle=g;X.fillRect(x-R,y-R,2*R,2*R);X.restore();
+ X.strokeStyle='rgba(255,255,255,.2)';X.lineWidth=1.2;X.beginPath();X.arc(x,y,R-1,.2,1.3);X.stroke();
+ X.save();X.translate(x-.38*R,y-.42*R);X.rotate(-.6);X.fillStyle='rgba(255,255,255,.9)';X.beginPath();X.ellipse(0,0,R*.24,R*.13,0,0,7);X.fill();X.restore()}
+function line(x1,y1,x2,y2,w,c){X.strokeStyle=c;X.lineWidth=w;X.beginPath();X.moveTo(x1+M,y1+M);X.lineTo(x2+M,y2+M);X.stroke()}
+const rail=(x,y,dx,dy)=>Math.max(0,Math.min(dx>0?(W-R-x)/dx:dx<0?(R-x)/dx:1e9,dy>0?(H-R-y)/dy:dy<0?(R-y)/dy:1e9));
+function aim(c){const dx=Math.cos(ang),dy=Math.sin(ang);let t=rail(c.x,c.y,dx,dy),hb=0;
+ for(let i=1;i<16;i++){const b=G.B[i];if(b.in)continue;const ex=c.x-b.x,ey=c.y-b.y,bb=-(dx*ex+dy*ey),ds=bb*bb-(ex*ex+ey*ey-4*R*R);if(ds>=0&&bb>0){const tt=bb-Math.sqrt(ds);if(tt<t){t=tt;hb=b}}}
+ const gx=c.x+dx*t,gy=c.y+dy*t;line(c.x,c.y,gx,gy,5,'#0006');line(c.x,c.y,gx,gy,2,'#fff');X.strokeStyle='#fff';X.lineWidth=2;X.beginPath();X.arc(gx+M,gy+M,R,0,7);X.stroke();
+ if(hb){const nx=(hb.x-gx)/(2*R),ny=(hb.y-gy)/(2*R),dt=dx*nx+dy*ny,tx=dx-dt*nx,ty=dy-dt*ny,tl=Math.sqrt(tx*tx+ty*ty)||1,L1=Math.min(380,rail(hb.x,hb.y,nx,ny));line(hb.x,hb.y,hb.x+nx*L1,hb.y+ny*L1,2,'#ffe27a');
+  if(tl>.02){const ux=tx/tl,uy=ty/tl,L2=Math.min(200,rail(gx,gy,ux,uy));line(gx,gy,gx+ux*L2,gy+uy*L2,2,'#fff8')}}
+ else{const ax=dx>0?(W-R-c.x)/dx:dx<0?(R-c.x)/dx:1e9,ay=dy>0?(H-R-c.y)/dy:dy<0?(R-c.y)/dy:1e9,rx=ax<ay?-dx:dx,ry=ax<ay?dy:-dy,L=Math.min(320,rail(gx,gy,rx,ry));line(gx,gy,gx+rx*L,gy+ry*L,2,'#fff7')}}
+function draw(){X.fillStyle='#5a1a10';X.beginPath();X.roundRect(0,0,1100,600,40);X.fill();
+ const g=X.createRadialGradient(550,300,50,550,300,600);g.addColorStop(0,'#3aa6d6');g.addColorStop(1,'#16618f');X.fillStyle=g;X.fillRect(M,M,W,H);X.strokeStyle='#2a8fc4';X.lineWidth=14;X.strokeRect(M-7,M-7,W+14,H+14);
+ X.fillStyle='#fffd';for(let k=1;k<8;k++)if(k!=4){for(const y of[-25,H+25]){X.beginPath();X.arc(M+W*k/8,M+y,3,0,7);X.fill()}}for(let k=1;k<4;k++)for(const x of[-25,W+25]){X.beginPath();X.arc(M+x,M+H*k/4,3,0,7);X.fill()}
+ if(G&&G.brk&&!run)line(250,0,250,H,1,'#fff4');X.fillStyle='#000';PK.forEach((p,k)=>{X.beginPath();X.arc(p[0]+M,p[1]+M,PR[k]-2,0,7);X.fill()});
+ if(!G)return;G.B.forEach((b,i)=>{if(!b.in&&i)ball(i,b)});const c=G.B[0],mine=!run&&!G.over&&G.turn==me;
+ if(!c.in)ball(0,c);
+ if(mine&&G.hand==1){const ok=free(mx,my);X.globalAlpha=ok?.8:.3;ball(0,{x:Math.max(R,Math.min(W-R,mx)),y:Math.max(R,Math.min(H-R,my))});X.globalAlpha=1}
+ else if(mine&&!c.in){aim(c);const d=pull?pw*90:0,dx=Math.cos(ang),dy=Math.sin(ang),o=R+6+d;line(c.x-dx*o,c.y-dy*o,c.x-dx*(o+330),c.y-dy*(o+330),7,'#e8c27a');line(c.x-dx*o,c.y-dy*o,c.x-dx*(o+6),c.y-dy*(o+6),7,'#58a')}
+ $('#pwb i').style.height=(pw*100)+'%'}
+function loop(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;if(run&&G){acc+=dt;let n=0;spin(dt);while(acc>=DT&&run){step();acc-=DT;if(++n>9e3||!moving()){run=0;G.B.forEach(b=>{if(!b.in&&n>9e3)b.vx=b.vy=0});fin()}}}draw();requestAnimationFrame(loop)}
+function hud(){[0,1].forEach(p=>{const g=G.grp[p];let t='<b>'+(mode=='ai'&&p==1?ANDROID+' ':'')+names[p]+(mode=='on'&&p==me?' (bạn)':'')+'</b><br><small>'+(g?(g=='s'?'Bi liền 1-7':'Bi sọc 9-15'):'Chưa chọn nhóm')+'</small><br>'+(g?'':'<small style="color:#9fb0e0;font-weight:500">Bi nào bỏ vào lỗ trước (sau cú phá) sẽ quyết định nhóm</small>');
+ const mb=i=>{const c=CL[i>8?i-8:i];return `<i class="mb" style="background:${i>8?`linear-gradient(${c} 0 0) center/100% 56% no-repeat,#f4f4ee`:c}">${i}</i>`};let po='',n=0;
+ if(g){const lo=g=='s'?1:9,hi=g=='s'?8:16;let rm='';for(let i=lo;i<hi;i++)G.B[i].in?(po+=mb(i),n++):rm+=`<i class="d" style="background:${CL[i>8?i-8:i]}"></i>`;if(G.B[8].in&&G.over)po+=mb(8);
+  t+='<small style="color:#9fb0e0;font-weight:500">Còn: </small>'+rm+(cnt(p)==0?' ➜ bi 8':'')}
+ $('#s'+p).innerHTML='<small>Đã vào lỗ</small><b>'+n+'</b>'+(po||'<small style="opacity:.6">chưa có</small>');$('#s'+p).className='side'+(G.turn==p&&!G.over?' on':'');$('#p'+p).innerHTML=t;$('#p'+p).className='pl'+(G.turn==p&&!G.over?' on':'')});
+ $('#msg').textContent=G.over?'🏆 '+names[G.win]+' thắng!':G.msg;
+ $('#hint').textContent=G.over?'Bấm ⬅ Thoát để chơi lại.':G.turn!=me?'Đang chờ '+names[G.turn]+' đánh…':G.hand==1?'Nhấp chuột vào chỗ trống để đặt bi trắng':'Di chuột để ngắm • Giữ chuột trái + kéo lùi để lấy lực • Thả chuột để đánh'+(G.grp[me]?'':'\n💡 Chưa chọn nhóm: sau cú phá, bạn bỏ bi liền (1–7) hay bi sọc (9–15) vào lỗ trước thì đó là nhóm của bạn.');fit()}
+/* ---------- chuột ---------- */
+function pos(e){const r=cv.getBoundingClientRect();mx=(e.clientX-r.left)*1100/r.width-M;my=(e.clientY-r.top)*600/r.height-M;if(G&&!pull&&!G.B[0].in)ang=Math.atan2(my-G.B[0].y,mx-G.B[0].x)}
+const myTurn=()=>G&&!run&&!G.over&&G.turn==me;
+function go(vx,vy){const c=G.B[0];if(mode=='on'){fb(code+'/s/'+applied,'PUT',{x:c.x,y:c.y,vx,vy}).catch(e=>$('#msg').textContent=e.message);applied++}shoot(c.x,c.y,vx,vy)}
+cv.onpointerdown=e=>{A();pos(e);if(e.button==2){pull=null;pw=0;return}if(!myTurn())return;
+ if(G.hand==1){if(free(mx,my)){G.B[0]={x:mx,y:my,vx:0,vy:0,in:0};G.hand=0;hud()}return}pull={x:mx,y:my,a:ang};cv.setPointerCapture(e.pointerId)};
+cv.onpointermove=e=>{const px=mx,py=my;if(pull){const r=cv.getBoundingClientRect();mx=(e.clientX-r.left)*1100/r.width-M;my=(e.clientY-r.top)*600/r.height-M;pw=Math.max(0,Math.min(1,((mx-pull.x)*-Math.cos(pull.a)+(my-pull.y)*-Math.sin(pull.a))/180))}else pos(e)};
+cv.onpointerup=()=>{if(pull){const a=pull.a,v=150+2450*pw;if(pw>.03&&myTurn())go(Math.cos(a)*v,Math.sin(a)*v);pull=null;pw=0}};
+cv.oncontextmenu=e=>e.preventDefault();cv.onwheel=e=>{e.preventDefault();if(!pull)ang+=Math.sign(e.deltaY)*.003};
+onkeydown=e=>{if(e.key=='Escape'){pull=null;pw=0}if(!pull){if(e.key=='ArrowLeft')ang-=.004;if(e.key=='ArrowRight')ang+=.004}};
+/* ---------- bắt đầu / online ---------- */
+function fit(){const g=$('#game');if(!g||g.style.display!='flex')return;const bd=$('#board'),sw=$('#s0').offsetWidth,sz=Math.max(200,Math.min(bd.clientWidth-12-2*sw-12,bd.clientHeight*1100/600,1100));$('#cw').style.width=cv.style.width=sz+'px';
+ const b=$('#pwb'),h=cv.offsetHeight;b.style.left=(cv.offsetLeft+cv.offsetWidth-24)+'px';b.style.top=(cv.offsetTop+h*.17)+'px';b.style.height=(h*.5)+'px'}
+onresize=fit;
+function quit(){if(G&&!G.over&&!confirm("Thoát game? Ván đang chơi sẽ bị huỷ."))return;clearInterval(tmr);location.href=location.pathname}
+function rules(s){$('#rl').style.display=s?'block':'none'}
+function help(s){$('#help').style.display=s?'block':'none'}
+function start(m,seed,n0,n1){mode=m;names=[n0,n1];vis0();G={B:mk(seed),turn:0,grp:[null,null],hand:0,brk:1,over:0,win:-1,msg:'Cú phá bi! '+n0+' đánh trước.'};started=1;applied=0;run=0;stopPres();$('#menu').style.display='none';$('#game').style.display='flex';document.body.style.overflow='hidden';hud();
+ if(!localStorage.bidaHelp){localStorage.bidaHelp=1;help(1)}}
+const nm=()=>($('#nm').value.trim()||'Người chơi').slice(0,14);
+function vsAI(){if(!need())return;me=0;diff=lv;start('ai',Math.random()*1e9|0,nm(),'Máy')}
+const K='AIzaSyD3hT273CawvQGlKMSHNbvhKzlqh9V_F2k',DB='https://minigame-70bef-default-rtdb.asia-southeast1.firebasedatabase.app';let tok,uid;
+async function fb(p,m,b,again){if(!tok){const r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+K,{method:'POST',headers:{'Content-Type':'application/json'},body:'{"returnSecureToken":true}'});{const j=await r.json();tok=j.idToken;uid=j.localId}}
+ const r=await fetch(`${DB}/bida/rooms/${p}.json?auth=${tok}`,{method:m||'GET',body:b===undefined?undefined:JSON.stringify(b)});if(r.status==401&&!again){tok=0;return fb(p,m,b,1)}
+ if(!r.ok)throw Error(r.status==401||r.status==403?'Chưa có quyền Firebase cho "bida" (xem ghi chú đầu file).':'Lỗi mạng '+r.status);return r.json()}
+function poll(){clearInterval(tmr);tmr=setInterval(async()=>{try{const r=await fb(code);if(!r)return;
+ if(!started){if(!r.g){$('#wt').textContent='Mã phòng: '+code+' — đang chờ bạn vào… (gửi mã này cho bạn)';return}start('on',r.seed,r.hn,r.gn)}
+ const s=r.s?Array.isArray(r.s)?r.s:Object.values(r.s):[];while(!run&&s[applied]&&!G.over){const k=s[applied++];shoot(k.x,k.y,k.vx,k.vy)}}catch(e){$('#wt').textContent=e.message}},600)}
+async function host(to){if(!need())return;try{me=0;code=Array.from({length:4},()=>'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[Math.random()*31|0]).join('');await fb(code,'PUT',{h:pid,hn:nm(),seed:Math.random()*1e9|0});busy(1);if(to)await invite(to);poll()}catch(e){$('#wt').textContent=e.message}}
+async function join(c){if(!need())return;try{if(c.length<4)return;let r=await fb(c);if(!r)return $('#wt').textContent='Không tìm thấy phòng này.';if(r.g)return $('#wt').textContent='Phòng đã đủ người.';
+ await fb(c,'PATCH',{g:pid,gn:nm()});r=await fb(c);if(r.g!=pid)return $('#wt').textContent='Phòng đã đủ người.';me=1;code=c;busy(1);poll()}catch(e){$('#wt').textContent=e.message}}
+/* ---------- online: danh sách người chơi + mời ---------- */
+const GID="b8";let pt=0,off=0,OL=[],seenInv='',presOn=0;
+async function fbo(p,m,b){if(!tok)await fb('x');const r=await fetch(`${DB}/bida/online/${GID}/${p}.json?auth=${tok}`,{method:m||'GET',body:b===undefined?undefined:JSON.stringify(b)});if(!r.ok)throw Error(r.status==401||r.status==403?'Chưa có quyền Firebase cho \"bida/online\" (xem HUONG-DAN.md).':'Lỗi mạng '+r.status);return r.json()}
+function nameUI(){const n=localStorage.bidaName;$('#nmbox').style.display=n?'none':'block';$('#hi').style.display=n?'block':'none';$('#hi b').textContent=n||''}
+function saveName(){const n=$('#nm').value.trim();if(!n)return;localStorage.bidaName=n;nameUI();if(mm==2)startPres()}
+function changeName(){stopPres();localStorage.removeItem('bidaName');$('#nm').value='';nameUI();$('#nm').focus();OL=[];renderOL()}
+$('#nm').addEventListener('change',saveName);$('#nm').addEventListener('keydown',e=>{if(e.key=='Enter')saveName()});
+async function pres(){try{if(!uid)await fb('x');await fbo(uid,'PATCH',{n:nm(),t:{'.sv':'timestamp'},s:code?1:0});const t=await fbo(uid+'/t');if(t)off=t-Date.now();await listOL()}catch(e){$('#wt').textContent=e.message}}
+function startPres(){if(!localStorage.bidaName){$('#wt').textContent='Nhập tên của bạn để hiện trong danh sách online.';return}if(presOn||started)return;presOn=1;pres();pt=setInterval(pres,5000)}
+function stopPres(){presOn=0;clearInterval(pt);if(uid&&tok)try{fetch(`${DB}/bida/online/${GID}/${uid}.json?auth=${tok}`,{method:'DELETE',keepalive:true})}catch(e){}}
+function busy(v){if(uid&&presOn)fbo(uid+'/s','PUT',v).catch(()=>{})}
+async function listOL(){const all=await fbo('')||{},now=Date.now()+off;OL=Object.keys(all).filter(k=>k!=uid&&all[k]&&all[k].t>now-16000&&!all[k].s).map(k=>({id:k,n:all[k].n||'Người chơi'}));renderOL();
+ const me0=all[uid],iv=me0&&me0.inv;if(iv&&iv.t>now-40000&&iv.r!=seenInv&&!started&&!code){seenInv=iv.r;showInv(iv)}else if(!iv||iv.t<=now-40000)$('#iv').style.display='none'}
+function renderOL(){const f=($('#os').value||'').trim().toLowerCase(),L=OL.filter(p=>!f||p.n.toLowerCase().includes(f));$('#oc').textContent=OL.length?'('+OL.length+')':'';
+ $('#ol').innerHTML=L.length?L.map(p=>'<div class="ob"><i></i><b>'+esc(p.n)+'</b><button onclick="host(\''+p.id+'\')">Mời</button></div>').join(''):'<div class="em">'+(OL.length?'Không thấy ai tên đó.':'Chưa có ai online. Bạn cứ tạo phòng rồi gửi mã nhé.')+'</div>'}
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+$('#os').addEventListener('input',renderOL);
+async function invite(to){await fbo(to+'/inv','PUT',{f:uid,n:nm(),r:code,t:{'.sv':'timestamp'}});$('#wt').textContent='Đã mời bạn ấy. Mã phòng: '+code+' — đang chờ vào…'}
+function showInv(iv){const d=$('#iv');d.innerHTML='🎱 <b>'+esc(iv.n)+'</b> mời bạn chơi!<br><button onclick="acceptInv(\''+iv.r+'\')">Đồng ý</button><button style="background:#e0e4f5" onclick="declineInv()">Từ chối</button>';d.style.display='block'}
+async function declineInv(){$('#iv').style.display='none';try{await fbo(uid+'/inv','DELETE')}catch(e){}}
+async function acceptInv(r){$('#iv').style.display='none';try{await fbo(uid+'/inv','DELETE')}catch(e){}join(r)}
+addEventListener('pagehide',()=>{if(!started)stopPres()});
+$('#menu').style.display='flex';$('#nm').value=localStorage.bidaName||'';nameUI();
+const q=new URLSearchParams(location.search).get('room');if(q){setMode(2);$('#rc').value=q.toUpperCase();$('#wt').textContent=localStorage.bidaName?'Bấm "Vào phòng" để vào chơi.':'Nhập tên rồi bấm "Vào phòng".'}
+requestAnimationFrame(loop);
+document.addEventListener('click',()=>setTimeout(()=>{const k=$('#vk');document.body.style.paddingBottom=k&&k.style.display=='block'?k.offsetHeight+'px':0},150));
+</script></body></html>

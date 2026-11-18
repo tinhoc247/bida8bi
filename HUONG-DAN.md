@@ -36,3 +36,6 @@ Tên game: sửa trong `<title>` và thẻ `<h1>`.
 - **Tâm ngắm**: vòng bi ảo có dấu **+** ở tâm, **chấm đỏ** ở điểm chạm, đường vàng = hướng bi bị chạm, đường trắng ngắn = hướng bi trắng lệch đi. Cây cơ vuốt nhọn, kéo lùi khi lấy lực.
 - **Di chuyển bi trắng lúc bắt đầu**: giữ chuột vào bi rồi kéo (chỉ trong vùng sáng sau vạch đầu bàn), sau đó ngắm và đánh. Online: vị trí được gửi cùng cú đánh nên 2 máy luôn khớp.
 - **Bi lăn mượt hơn**: nội suy vị trí giữa các bước vật lý, làm mượt thời gian khung hình, canvas nét theo màn hình Retina, bi xoay theo đúng quãng đường đã đi, bi rơi lỗ có hiệu ứng (bản 8 bi).
+
+## Âm thanh
+Tiếng bi va nhau, tiếng đánh bi, cú phá và tiếng reo hò khi thắng dùng mẫu âm thật nhúng sẵn trong `index.html`. Chưa giải mã xong thì dùng âm tổng hợp như trước.

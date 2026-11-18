@@ -39,3 +39,7 @@ Tên game: sửa trong `<title>` và thẻ `<h1>`.
 
 ## Âm thanh
 Tiếng bi va nhau, tiếng đánh bi, cú phá và tiếng reo hò khi thắng dùng mẫu âm thật nhúng sẵn trong `index.html`. Chưa giải mã xong thì dùng âm tổng hợp như trước.
+
+## Tiếng vỗ tay khi ghi điểm (mới)
+- Mỗi lần **bỏ bi của mình vào lỗ** (hoặc bi đầu tiên khi chưa chia nhóm) phát **tiếng vỗ tay ~2,6 giây**, âm lượng vừa phải (mẫu nhúng sẵn trong `index.html`, khoá `cheer` của `SMP`; chỉnh to/nhỏ ở `g.gain.value=.38` trong hàm `clap()`). Bỏ bi đối thủ hoặc bi trắng thì không vỗ tay. Bỏ nhiều bi liên tiếp thì tiếng cũ tắt nhanh rồi phát lại, không chồng to lên. Bi 8 quyết định thắng/thua vẫn có tiếng vỗ tay kết thúc.
+- Mọi chữ thông tin đều nằm ngoài bàn (bảng tên hai bên, thanh trên và dòng gợi ý dưới bàn), không che bi.

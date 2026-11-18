@@ -30,3 +30,9 @@ Tên game: sửa trong `<title>` và thẻ `<h1>`.
     }
   }
 }
+
+## Cập nhật giao diện (bàn mới)
+- **Bàn mới**: thành gỗ đỏ có chấm trắng, băng xanh, nỉ xanh sáng ở giữa, lỗ có nắp kim loại, vạch đầu bàn.
+- **Tâm ngắm**: vòng bi ảo có dấu **+** ở tâm, **chấm đỏ** ở điểm chạm, đường vàng = hướng bi bị chạm, đường trắng ngắn = hướng bi trắng lệch đi. Cây cơ vuốt nhọn, kéo lùi khi lấy lực.
+- **Di chuyển bi trắng lúc bắt đầu**: giữ chuột vào bi rồi kéo (chỉ trong vùng sáng sau vạch đầu bàn), sau đó ngắm và đánh. Online: vị trí được gửi cùng cú đánh nên 2 máy luôn khớp.
+- **Bi lăn mượt hơn**: nội suy vị trí giữa các bước vật lý, làm mượt thời gian khung hình, canvas nét theo màn hình Retina, bi xoay theo đúng quãng đường đã đi, bi rơi lỗ có hiệu ứng (bản 8 bi).

@@ -62,12 +62,20 @@ function tone(v,f,d,ty){if(mute)return;const a=A(),t=a.currentTime,o=a.createOsc
 function ping(f,d,g){if(mute)return;const a=A(),t=a.currentTime,o=a.createOscillator(),e=a.createGain();o.type='sine';o.frequency.setValueAtTime(f,t);e.gain.setValueAtTime(.0001,t);e.gain.linearRampToValueAtTime(g,t+.0015);e.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(e);e.connect(M0);o.start(t);o.stop(t+d+.02)}
 let NB;function tick(g,fr){if(mute)return;const a=A(),t=a.currentTime;if(!NB){NB=a.createBuffer(1,a.sampleRate*.04|0,a.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(d.length*.12))}
  const s=a.createBufferSource(),f=a.createBiquadFilter(),e=a.createGain();s.buffer=NB;f.type='bandpass';f.frequency.value=fr;f.Q.value=1.2;e.gain.value=g;s.connect(f);f.connect(e);e.connect(M0);s.start(t)}
+/* tiếng bi va nhau: "tách" khô, gọn (nhựa phenolic): nhát click rất ngắn + vài hài vô tuyến tắt nhanh + chút "cộp" thân bi; 2 nhát cách ~3,5 ms cho ra "tách" hai bi */
+let CB;function clack(v,gain){if(mute)return;const a=A(),t=a.currentTime,k=Math.min(1,v/700),G=(gain||1)*(.35+.65*k);
+ if(!CB){CB=a.createBuffer(1,a.sampleRate*.012|0,a.sampleRate);const d=CB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(d.length*.14))}
+ const hit=(o,g)=>{const t0=t+o,j=1+(Math.random()-.5)*.08;
+  const n=a.createBufferSource(),f=a.createBiquadFilter(),e=a.createGain();n.buffer=CB;f.type='highpass';f.frequency.value=2400*j;e.gain.value=.9*g*G;n.connect(f);f.connect(e);e.connect(M0);n.start(t0);
+  [[2750,.16,.03],[4350,.11,.02],[6200,.06,.012],[1050,.1,.024]].forEach(p=>{const os=a.createOscillator(),eg=a.createGain(),fr=p[0]*j*(1+.06*k);os.type='sine';os.frequency.setValueAtTime(fr,t0);
+   eg.gain.setValueAtTime(.0001,t0);eg.gain.linearRampToValueAtTime(p[1]*g*G,t0+.0006);eg.gain.exponentialRampToValueAtTime(.0001,t0+p[2]);os.connect(eg);eg.connect(M0);os.start(t0);os.stop(t0+p[2]+.01)})};
+ hit(0,1);hit(.0035,.5)}
 let lc=0;
 function clap(){if(mute||Date.now()-lc<900)return;lc=Date.now();const a=A(),sr=a.sampleRate,n=sr*2.2|0,b=a.createBuffer(1,n,sr),d=b.getChannelData(0);
  for(let k=0;k<150;k++){const t=Math.random()*1.7,s=t*sr|0,len=900+Math.random()*1100|0,am=(.25+.75*Math.random())*Math.min(1,t/.35)*(1-t/2),a1=.12+Math.random()*.16;let y=0,z=0;for(let i=0;i<len&&s+i<n;i++){const x=Math.random()*2-1;y+=a1*(x-y);z+=.03*(x-z);d[s+i]+=(y-z)*Math.exp(-i/(len*.3))*Math.min(1,i/70)*am*.32}}
  const s=a.createBufferSource(),l=a.createBiquadFilter(),h=a.createBiquadFilter(),g=a.createGain(),T=a.currentTime;l.type='lowpass';l.frequency.value=2600;l.Q.value=.2;h.type='highpass';h.frequency.value=350;g.gain.setValueAtTime(0,T);g.gain.linearRampToValueAtTime(.5,T+.3);g.gain.linearRampToValueAtTime(.35,T+1.1);g.gain.linearRampToValueAtTime(0,T+2.1);s.buffer=b;s.connect(h);h.connect(l);l.connect(g);g.connect(M0);s.start()}
 let lt=0;function snd(t,v,i){const n=Date.now();if(t!='p'){if(n-lt<25)return;lt=n}
- if(t=='b'){const k=Math.min(1,v/700),j=1+Math.random()*.05;ping(2350*j,.12,.03+.2*k);ping(3900*j,.07,.012+.07*k);ping(560,.04,.03+.1*k);tick(.04+.22*k,4200)}
+ if(t=='b'){clack(v)}
  else if(t=='w'){const k=Math.min(1,v/600);ping(210,.12,.03+.16*k);ping(480,.05,.01+.05*k);tick(.02+.08*k,1500)}
  else if(i){ping(260,.22,.14);ping(170,.3,.1);clap()}else{ping(200,.25,.12);ping(130,.32,.08)}}
 /* ---------- vật lý (xác định, 2 máy chạy giống nhau) ---------- */
@@ -92,7 +100,7 @@ const cnt=p=>{const g=G.grp[p];if(!g)return 15;let c=0;for(let i=1;i<16;i++)if(i
 const free=(x,y)=>x>=R&&x<=W-R&&y>=R&&y<=H-R&&G.B.every((b,i)=>i==0||b.in||(b.x-x)**2+(b.y-y)**2>=4*R*R);
 const hz=()=>G.hand==2?250:W-R,okp=(x,y)=>x<=hz()&&free(x,y);
 function moveCue(x,y){const c=G.B[0],cl=(v,a,b)=>Math.max(a,Math.min(b,v));x=cl(x,R,hz());y=cl(y,R,H-R);if(okp(x,y)){c.x=x;c.y=y}else if(okp(x,c.y))c.x=x;else if(okp(c.x,y))c.y=y;c.px=c.x;c.py=c.y}
-function shoot(x,y,vx,vy){G.B[0]={x,y,px:x,py:y,vx,vy,in:0};S={first:0,rail:0,pot:[],rem:cnt(G.turn),n:0};G.hand=0;run=1;{const k=Math.min(1,Math.sqrt(vx*vx+vy*vy)/1800);ping(1500,.07,.04+.16*k);ping(2600,.04,.01+.05*k);tick(.03+.12*k,3500)}hud()}
+function shoot(x,y,vx,vy){G.B[0]={x,y,px:x,py:y,vx,vy,in:0};S={first:0,rail:0,pot:[],rem:cnt(G.turn),n:0};G.hand=0;run=1;clack(Math.sqrt(vx*vx+vy*vy)*.45,1.1);hud()}
 /* ---------- luật ---------- */
 function judge(){const p=G.turn,B=G.B,g=G.grp[p],f=S.first,pot=S.pot.filter(i=>i),t8=g&&S.rem==0,own=i=>g=='s'?i<8:i>8;let foul=0,m='';
  if(B[0].in){foul=1;m='bi trắng rơi lỗ'}else if(!f){foul=1;m='không chạm bi nào'}else if(g?(t8?f!=8:f==8||!own(f)):f==8){foul=1;m='chạm sai bi'}else if(!pot.length&&!S.rail){foul=1;m='không có bi nào chạm băng'}
@@ -143,23 +151,26 @@ function buildTable(){
  for(let k=0;k<id.data.length;k+=4){const v=Math.random()*255|0;id.data[k]=id.data[k+1]=id.data[k+2]=v;id.data[k+3]=Math.random()*22|0}nx.putImageData(id,0,0);T.fillStyle=T.createPattern(nc,'repeat');T.fillRect(M,M,W,H);
  for(const[x0,y0,x1,y1,rx,ry,rw,rh]of[[M,M,M,M+26,M,M,W,26],[M,M+H,M,M+H-26,M,M+H-26,W,26],[M,M,M+26,M,M,M,26,H],[M+W,M,M+W-26,M,M+W-26,M,26,H]]){
   const gg=T.createLinearGradient(x0,y0,x1,y1);gg.addColorStop(0,'rgba(0,30,60,.38)');gg.addColorStop(1,'rgba(0,30,60,0)');T.fillStyle=gg;T.fillRect(rx,ry,rw,rh)}
- T.strokeStyle='rgba(255,255,255,.3)';T.lineWidth=1.5;T.beginPath();T.moveTo(M+250,M);T.lineTo(M+250,M+H);T.stroke();
+ T.strokeStyle='rgba(255,255,255,.47)';T.lineWidth=2;T.beginPath();T.moveTo(M+250,M);T.lineTo(M+250,M+H);T.stroke();   /* vạch trắng: luôn hiện, kể cả sau cú đánh đầu */
  T.fillStyle='rgba(255,255,255,.4)';T.beginPath();T.arc(M+250,M+250,2.5,0,7);T.fill();T.beginPath();T.arc(M+750,M+250,2.5,0,7);T.fill();
  /* băng (cushion) */
  const cu=(p,a0,a1)=>{const gg=T.createLinearGradient(a0[0],a0[1],a1[0],a1[1]);gg.addColorStop(0,'#1b6f9f');gg.addColorStop(1,'#42b6e4');T.fillStyle=gg;T.beginPath();T.moveTo(p[0][0],p[0][1]);for(let k=1;k<4;k++)T.lineTo(p[k][0],p[k][1]);T.closePath();T.fill();
   T.lineCap='round';T.strokeStyle='rgba(8,50,80,.55)';T.lineWidth=1.5;T.beginPath();T.moveTo(p[0][0],p[0][1]);T.lineTo(p[1][0],p[1][1]);T.stroke();
-  T.strokeStyle='rgba(190,240,255,.85)';T.lineWidth=2;T.beginPath();T.moveTo(p[2][0],p[2][1]);T.lineTo(p[3][0],p[3][1]);T.stroke()};
+  T.strokeStyle='rgba(190,240,255,.85)';T.lineWidth=2;T.beginPath();T.moveTo(p[2][0],p[2][1]);T.lineTo(p[3][0],p[3][1]);T.stroke()
+   T.strokeStyle='rgba(6,40,70,.5)';T.lineWidth=1.6;T.beginPath();T.moveTo(p[1][0],p[1][1]);T.lineTo(p[2][0],p[2][1]);T.moveTo(p[3][0],p[3][1]);T.lineTo(p[0][0],p[0][1]);T.stroke();
+   T.strokeStyle='rgba(190,240,255,.35)';T.lineWidth=1;T.beginPath();T.moveTo(p[1][0],p[1][1]);T.lineTo(p[2][0],p[2][1]);T.moveTo(p[3][0],p[3][1]);T.lineTo(p[0][0],p[0][1]);T.stroke()};
  const hs=HASP?[[40,W/2-34],[W/2+34,W-40]]:[[0,W]],vs=HASP?[[40,H-40]]:[[0,H]];
  for(const[a,b]of hs){cu([[M+a-CU,M-CU],[M+b+CU,M-CU],[M+b,M],[M+a,M]],[0,M-CU],[0,M]);cu([[M+a-CU,M+H+CU],[M+b+CU,M+H+CU],[M+b,M+H],[M+a,M+H]],[0,M+H+CU],[0,M+H])}
  for(const[a,b]of vs){cu([[M-CU,M+a-CU],[M-CU,M+b+CU],[M,M+b],[M,M+a]],[M-CU,0],[M,0]);cu([[M+W+CU,M+a-CU],[M+W+CU,M+b+CU],[M+W,M+b],[M+W,M+a]],[M+W+CU,0],[M+W,0])}
  /* chấm trắng trên thành gỗ */
  const dm=(x,y)=>{T.save();T.translate(x,y);T.rotate(Math.PI/4);T.fillStyle='rgba(0,0,0,.35)';T.fillRect(-3,-2.4,6.4,6.4);T.fillStyle='#f6efe0';T.fillRect(-3.2,-3.2,6.4,6.4);T.restore()};
  for(let k=1;k<8;k++){if(HASP&&k==4)continue;dm(M+W*k/8,17);dm(M+W*k/8,583)}for(let k=1;k<4;k++){dm(17,M+H*k/4);dm(1083,M+H*k/4)}
- /* lỗ */
- if(HASP)PK.forEach((p,k)=>{const x=p[0]+M,y=p[1]+M,cor=k%3!=1;
-  if(cor){const gg=T.createRadialGradient(x-8,y-8,4,x,y,PR[k]+12);gg.addColorStop(0,'#e1e4ea');gg.addColorStop(1,'#6a707a');T.fillStyle=gg;T.beginPath();T.arc(x,y,PR[k]+10,0,7);T.fill();T.strokeStyle='rgba(0,0,0,.45)';T.lineWidth=2;T.stroke()}
-  else{T.fillStyle='#737984';T.beginPath();T.arc(x,y,PR[k]+4,0,7);T.fill();T.strokeStyle='rgba(0,0,0,.4)';T.lineWidth=1.5;T.stroke()}
-  const hg=T.createRadialGradient(x,y,2,x,y,PR[k]-2);hg.addColorStop(0,'#000');hg.addColorStop(.7,'#0a0202');hg.addColorStop(1,'#2a0c0c');T.fillStyle=hg;T.beginPath();T.arc(x,y,PR[k]-2,0,7);T.fill()})}
+  /* lỗ: KHÔNG đóng khung; đầu băng vát chéo dốc xuống miệng lỗ, miệng lỗ đen có bóng đổ nhẹ */
+  if(HASP){T.save();T.beginPath();T.roundRect(4,4,1092,592,36);T.clip();
+   PK.forEach((p,k)=>{const x=p[0]+M,y=p[1]+M,r=PR[k]-2;
+    const sg=T.createRadialGradient(x,y,r-4,x,y,r+16);sg.addColorStop(0,'rgba(0,12,24,.6)');sg.addColorStop(.55,'rgba(0,12,24,.22)');sg.addColorStop(1,'rgba(0,12,24,0)');
+    T.fillStyle=sg;T.beginPath();T.arc(x,y,r+16,0,7);T.fill();
+    const hg=T.createRadialGradient(x,y,2,x,y,r);hg.addColorStop(0,'#000');hg.addColorStop(.7,'#0a0202');hg.addColorStop(1,'#2a0c0c');T.fillStyle=hg;T.beginPath();T.arc(x,y,r,0,7);T.fill()});T.restore()}}
 function fline(x1,y1,x2,y2,w,rgb,a0,a1){const g=X.createLinearGradient(x1+M,y1+M,x2+M,y2+M);g.addColorStop(0,'rgba('+rgb+','+a0+')');g.addColorStop(1,'rgba('+rgb+','+a1+')');
  X.save();X.strokeStyle=g;X.lineWidth=w;X.lineCap='round';X.beginPath();X.moveTo(x1+M,y1+M);X.lineTo(x2+M,y2+M);X.stroke();X.restore()}
 /* TÂM NGẮM: vòng bi ảo + dấu cộng ở tâm + chấm đỏ tại điểm chạm */
@@ -178,7 +189,7 @@ function cueStick(c,d){const dx=Math.cos(ang),dy=Math.sin(ang),nx=-dy,ny=dx,o=R+
  const g=X.createLinearGradient(x0,y0,x1,y1);[[0,'#8fd3ff'],[.012,'#8fd3ff'],[.014,'#f4efe4'],[.05,'#f4efe4'],[.052,'#f7cd86'],[.4,'#e49a3e'],[.64,'#bf661d'],[.655,'#2b1a12'],[1,'#120a07']].forEach(s=>g.addColorStop(s[0],s[1]));
  body(0,0);X.fillStyle=g;X.fill();X.strokeStyle='rgba(255,255,255,.28)';X.lineWidth=1;X.beginPath();X.moveTo(x0+nx*wa*.5,y0+ny*wa*.5);X.lineTo(x1+nx*wb*.5,y1+ny*wb*.5);X.stroke();X.restore()}
 function handRing(c,now){const a=.5+.5*Math.sin(now/220);X.save();X.strokeStyle='rgba(255,255,255,'+(.45+.4*a)+')';X.lineWidth=2;X.setLineDash([5,4]);X.lineDashOffset=-now/60;X.beginPath();X.arc(c.x+M,c.y+M,R+7,0,7);X.stroke();X.restore()}
-function zone(){X.save();X.beginPath();X.rect(M,M,250,H);if(HASP)for(const k of[0,3]){X.moveTo(PK[k][0]+M+PR[k]+10,PK[k][1]+M);X.arc(PK[k][0]+M,PK[k][1]+M,PR[k]+10,0,7)}X.clip('evenodd');X.fillStyle='rgba(255,255,255,.12)';X.fillRect(M,M,250,H);X.restore();line(250,0,250,H,2,'#fff7')}
+function zone(){X.save();X.beginPath();X.rect(M,M,250,H);if(HASP)for(const k of[0,3]){X.moveTo(PK[k][0]+M+PR[k]-2,PK[k][1]+M);X.arc(PK[k][0]+M,PK[k][1]+M,PR[k]-2,0,7)}X.clip('evenodd');X.fillStyle='rgba(255,255,255,.12)';X.fillRect(M,M,250,H);X.restore();line(250,0,250,H,2,'#fff7')}
 function ball0(i,b){const x=b.x+M,y=b.y+M,c=i?CL[i>8?i-8:i]:'#fff',o=VIS[i]||{l:[0,0,1],a:[0,1,0]};
  let g=X.createRadialGradient(x+3,y+5,R*.3,x+3,y+5,R*1.5);g.addColorStop(0,'rgba(0,0,0,.45)');g.addColorStop(1,'rgba(0,0,0,0)');X.fillStyle=g;X.beginPath();X.arc(x+3,y+5,R*1.5,0,7);X.fill();
  X.save();X.beginPath();X.arc(x,y,R,0,7);X.clip();X.fillStyle=i>8||!i?'#f4f4ee':c;X.fillRect(x-R,y-R,2*R,2*R);
